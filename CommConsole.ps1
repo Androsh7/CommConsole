@@ -97,18 +97,34 @@ $UDP_Receiver = {
     $udpClient = New-Object System.Net.Sockets.UdpClient($port) # Create a UDP client
     $udpClient.Client.ReceiveTimeout = 1000 # Set a timeout for receiving data (optional)
     $remoteEndPoint = New-Object System.Net.IPEndPoint([System.Net.IPAddress]::Any, 0) # Create a remote endpoint to hold the sender's information
+
+    $date = Get-Date
     Clear-Host
     Write-Host "---------------------- UDP_LISTENER on port ${port} ----------------------" -ForegroundColor Blue
-    while ($true) {
-        try {
-            $receiveBytes = $udpClient.Receive([ref]$remoteEndPoint) # Receive a datagram 
-            $receivedData = [Text.Encoding]::ASCII.GetString($receiveBytes) # Convert the received byte array to a string
-            Write-Host "Received data: $receivedData" # Print the received data to the console
-        } catch {}
+    Write-Host "Writing conversation to $convo_file" -ForegroundColor Blue
+    Write-Host "----- Started Recording at ${date} -----" -ForegroundColor Blue
+    powershell.exe Write-Host "Started Recording at ${date} on UDP port ${port}" >> $convo_file
+
+    try{
+        while ($true) {
+            try {
+                $receiveBytes = $udpClient.Receive([ref]$remoteEndPoint) # Receive a datagram 
+                $receivedData = [Text.Encoding]::ASCII.GetString($receiveBytes) # Convert the received byte array to a string
+
+                $date = Get-Date
+                Write-Host $convo_file -Append -InputObject "----- RECEIVED AT ${date} -----"
+                powershell.exe Write-Host $convo_file -Append -InputObject "----- RECEIVED AT ${date} -----" >> $convo_file
+                Write-Host $convo_file -Append -InputObject ${receivedData}
+                powershell.exe Write-Host $convo_file -Append -InputObject ${receivedData} >> $convo_file
+            } catch {}
+        }
+    } finally {
+        Write-Host "---------------------- Stopped Recording on port ${port} ----------------------" -ForegroundColor Blue
+        powershell.exe Write-Host "----- Stopped Recording at ${date} on UDP port ${port} -----" >> $convo_file
+        #close the UDP listener when exiting the loop
+        $udpClient.Close()
+        Start-Sleep 2
     }
-    
-    # Optionally close the UDP client when exiting the loop
-    $udpClient.Close()
 }
 
 # interprets commands starting with "#"
@@ -120,27 +136,25 @@ function UserCommands {
         # Command Menu
         "#help" { 
             Write-Host "#help - opens the help menu
-#udp_start - begins the udp transmitter
-#udp_stop - stops the udp transmitter
-#udp_listener- opens a udp listener window
+#start - begins the udp transmitter
+#stop - stops the udp transmitter
+#listene- opens a udp listener window
 #info - gives info on the transmitter
 #test - tests the current transmitter
 #set_file - designates a file to store the conversation
 #clear_file - clears the conversation file
 #read_file - opens a terminal that reads the conversation
-#quit - exits the program and closes the socket" -ForegroundColor Green
+#q - exits the program and closes the socket" -ForegroundColor Green
         }
         # setup the udp transmitter
-        "#udp_start" {
-            Start_UDP_Transmitter
-        }
+        "#start" { Start_UDP_Transmitter }
         # close the udp transmitter
-        "#udp_end" {
-            Stop_UDP_Transmitter
-        }
+        "#end" { Stop_UDP_Transmitter }
+        "#stop" { Stop_UDP_Transmitter }
         # opens a udp listener window
-        "#udp_listen" {
-            Start-Process -FilePath powershell.exe -ArgumentList "-NoProfile", "$UDP_Receiver"
+        "#listen" {
+            $pwd = [string](Get-Location)
+            Start-Process -FilePath powershell.exe -WorkingDirectory $pwd -ArgumentList "Set-Variable -Name `"convo_file`" -Value `"conversations.txt`"", "$UDP_Receiver"
         }
         # prints the transmission info
         "#info" {
@@ -163,9 +177,8 @@ function UserCommands {
 
         }
         # quit program
-        "#quit" {
-            Exit
-        }
+        "#q" { Exit }
+        "#quit" { Exit }
         Default { 
             Write-Host "Invalid Command" -ForegroundColor Red
         }
