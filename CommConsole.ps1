@@ -102,8 +102,8 @@ $UDP_Receiver = {
     Clear-Host
     Write-Host "---------------------- UDP_LISTENER on port ${port} ----------------------" -ForegroundColor Blue
     Write-Host "Writing conversation to $convo_file" -ForegroundColor Blue
-    Write-Host "----- Started Recording at ${date} -----" -ForegroundColor Blue
-    powershell.exe Write-Host "Started Recording at ${date} on UDP port ${port}" >> $convo_file
+    Write-Host "Started Recording at ${date}" -ForegroundColor Blue
+    powershell.exe Write-Host "----- Started Recording at ${date} on UDP port ${port} -----" >> $convo_file
 
     try{
         while ($true) {
@@ -137,14 +137,14 @@ function UserCommands {
         "#help" { 
             Write-Host "#help - opens the help menu
 #start - begins the udp transmitter
-#stop - stops the udp transmitter
-#listene- opens a udp listener window
+#stop / #end - stops the udp transmitter
+#listen- opens a udp listener window
 #info - gives info on the transmitter
 #test - tests the current transmitter
 #set_file - designates a file to store the conversation
 #clear_file - clears the conversation file
 #read_file - opens a terminal that reads the conversation
-#q - exits the program and closes the socket" -ForegroundColor Green
+#q / #quit - exits the program and closes the socket" -ForegroundColor Green
         }
         # setup the udp transmitter
         "#start" { Start_UDP_Transmitter }
@@ -225,4 +225,7 @@ try {
     }
 } finally {
     Write-Host "Goodbye!" -ForegroundColor Green
+    if ($global:transmitter) {
+        Stop_UDP_Transmitter
+    }
 }
