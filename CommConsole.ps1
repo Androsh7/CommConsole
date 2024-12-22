@@ -87,11 +87,7 @@ function Stop_UDP_Transmitter {
     }
 }
 
-# Receiver
-#[string] $filename = ""
-#[int] $recv_port = 0
-#[bool] $receiver = $false
-
+# This is the code that opens in another window
 $UDP_Receiver = {
     Set-Window -Width 1200 -Height 900 -Passthru
     $port = Read-Host "Select the UDP Listening Port: "
