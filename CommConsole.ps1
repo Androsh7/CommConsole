@@ -35,6 +35,7 @@ SOFTWARE.
 
 function Start_UDP_Transmitter {
     try {
+        # Credit for Transmitter Socket Code: Thomas Lee - tfl@psp.co.uk - http://www.pshscripts.blogspot.com 
         $global:dst_ip = Read-Host "Destination IP: "
         $global:dst_port = [int](Read-Host "Destination Port: ")
         $global:dst_proto = "(UDP)"
