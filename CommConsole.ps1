@@ -36,8 +36,8 @@ SOFTWARE.
 function Start_UDP_Transmitter {
     try {
         # Credit for Transmitter Socket Code: Thomas Lee - tfl@psp.co.uk - http://www.pshscripts.blogspot.com 
-        $global:dst_ip = Read-Host "Destination IP: "
-        $global:dst_port = [int](Read-Host "Destination Port: ")
+        $global:dst_ip = Read-Host "Destination IP"
+        $global:dst_port = [int](Read-Host "Destination Port")
         $global:dst_proto = "(UDP)"
 
         $Address = [system.net.IPAddress]::Parse($dst_ip)
@@ -87,10 +87,12 @@ function Stop_UDP_Transmitter {
     }
 }
 
+# Receiver
+$convo_file = "conversations.txt"
+
 # This is the code that opens in another window
 $UDP_Receiver = {
-    Set-Window -Width 1200 -Height 900 -Passthru
-    $port = Read-Host "Select the UDP Listening Port: "
+    $port = Read-Host "Select the UDP Listening Port"
     $port = [int]$port
     $udpClient = New-Object System.Net.Sockets.UdpClient($port) # Create a UDP client
     $udpClient.Client.ReceiveTimeout = 1000 # Set a timeout for receiving data (optional)
@@ -151,11 +153,10 @@ function UserCommands {
         }
         # setup the save file
         "#set_file" {
-
         }
         # clear the conversation file
         "#clear_file" {
-            
+            Out-File $convo_file
         }
         # open file reader
         "#read_file" {
@@ -196,7 +197,12 @@ try {
 
             # Informational message for length
             $length = $UserInput.Length
-            Write-Host "Sent ${length} Characters to ${dst_ip}:${dst_port} ${dst_proto}" -ForegroundColor Green
+            $date = Get-Date -UFormat "%m/%d/%Y %R UTC%Z"
+            Write-Host "SENT ${length} Characters AT ${date}" -ForegroundColor Green
+            
+            # writes to the conversation file
+            Out-File $convo_file -Append -InputObject "----- SENT TO ${dst_ip}:${dst_port} ${dst_proto} AT ${date} -----"
+            Out-File $convo_file -Append -InputObject $UserInput
         }
 
         # If the transmitter is not setup, give an error
