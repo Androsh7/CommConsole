@@ -45,7 +45,7 @@ $global:encryption_key = "defaultkey"
 
 # Function to enable encryption
 function Enable_Encryption {
-    if ($global:encryption_key -eq "default") {
+    if ($global:encryption_key -eq "defaultkey") {
         Write-Host "ERROR: Encryption key not set" -ForegroundColor Red
         return
     }
@@ -273,7 +273,7 @@ function Stop_TCP_Transmitter {
     $global:prompt = ">"
 }
 
-function Send_TCP_Message {
+function Transmit_TCP_Message {
     param (
         $Message
     )
@@ -359,35 +359,35 @@ function UserCommands {
         # Command Menu
         "#help" { 
             Write-Host "#help - opens the help menu
-#UDP_start - begins the udp transmitter
-#UDP_stop / #UDP_end - stops the udp transmitter
-#UDP_listen- opens a udp listener window
-#TCP_start - begins the tcp transmitter
-#TCP_stop / #TCP_end - stops the tcp transmitter
+#UDP start - begins the udp transmitter
+#UDP stop / #UDP_end - stops the udp transmitter
+#UDP listen- opens a udp listener window
+#TCP start - begins the tcp transmitter
+#TCP stop / #TCP_end - stops the tcp transmitter
 #info - gives info on the transmitter
-#UDP_test - tests the current UDP transmitter
-#set_file - designates a file to store the conversation
-#clear_file - clears the conversation file
-#read_file - opens a terminal that reads the conversation
-#enable_encryption - enables message encryption
-#disable_encryption - disables message encryption
-#set_key - sets the encryption key
+#UDP test - tests the current UDP transmitter
+#set file - designates a file to store the conversation
+#clear file - clears the conversation file
+#read file - opens a terminal that reads the conversation
+#enable encryption - enables message encryption
+#disable encryption - disables message encryption
+#set key - sets the encryption key
 #q / #quit - exits the program and closes the socket" -ForegroundColor Green
         }
         # setup the udp transmitter
-        "#UDP_start" { Start_UDP_Transmitter }
+        "#UDP start" { Start_UDP_Transmitter }
         # close the udp transmitter
-        "#UDP_end" { Stop_UDP_Transmitter }
-        "#UDP_stop" { Stop_UDP_Transmitter }
+        "#UDP end" { Stop_UDP_Transmitter }
+        "#UDP stop" { Stop_UDP_Transmitter }
         # opens a udp listener window
-        "#UDP_listen" {
+        "#UDP listen" {
             Start-Process -FilePath powershell.exe -WorkingDirectory $pwd -ArgumentList "Set-Variable -Name `"convo_file`" -Value `"conversations.txt`"; $UDP_Receiver"
         }
         # setup the tcp transmitter
-        "#TCP_start" { Start_TCP_Transmitter }
+        "#TCP start" { Start_TCP_Transmitter }
         # close the tcp transmitter
-        "#TCP_end" { Stop_TCP_Transmitter }
-        "#TCP_stop" { Stop_TCP_Transmitter }
+        "#TCP end" { Stop_TCP_Transmitter }
+        "#TCP stop" { Stop_TCP_Transmitter }
         # prints the transmission info
         "#info" {
             if ($transmitter) {
@@ -401,31 +401,31 @@ function UserCommands {
             Write-Host "Conversation File: ${convo_file}" -ForegroundColor Green
         }
         # tests the connection to the target
-        "#UDP_test" {
+        "#UDP test" {
             Test_Connection
         }
         # setup the save file
-        "#set_file" {
+        "#set file" {
             $global:convo_file = Read-Host "Enter the file name"
         }
         # clear the conversation file
-        "#clear_file" {
+        "#clear file" {
             Out-File -FilePath $convo_file -InputObject $null
         }
         # open file reader
-        "#read_file" {
+        "#read file" {
 
         }
         # enable encryption
-        "#enable_encryption" {
+        "#enable encryption" {
             Enable_Encryption
         }
         # disable encryption
-        "#disable_encryption" {
+        "#disable encryption" {
             Disable_Encryption
         }
         # set encryption key
-        "#set_key" {
+        "#set key" {
             Set_Encryption_Key
         }
         # quit program
@@ -457,12 +457,13 @@ try {
             Transmit_UDP_Message $UserInput
         }
         elseif ($global:transmitter -and $global:dst_proto -eq "TCP") {
-            Send_TCP_Message $UserInput
+            Transmit_TCP_Message $UserInput
         }
 
         # If the transmitter is not setup, give an error
         else {
             Write-Host "ERROR: no working transmitter" -ForegroundColor Red
+            Write-Host "Try #help for a list of commands" -ForegroundColor Green
         }
     }
 } finally {
